@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest contentforge --typescript --tailwind --app --src-dir --use-npm --eslint --no-import-alias --turbopack)",
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(printf:*)",
+      "Bash(yes:*)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx prisma:*)"
+    ]
+  }
+}
