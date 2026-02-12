@@ -1,4 +1,17 @@
-// NextAuth.js endpoints will be configured here
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+
 export async function GET() {
-  return Response.json({ message: "Auth endpoint placeholder" });
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+    return NextResponse.json({ user });
+  } catch {
+    return NextResponse.json(
+      { error: "Auth check failed", code: "AUTH_ERROR", status: 500 },
+      { status: 500 }
+    );
+  }
 }
