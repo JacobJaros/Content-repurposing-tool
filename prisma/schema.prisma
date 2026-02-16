@@ -19,11 +19,15 @@ model User {
   usageCount           Int       @default(0)
   usageResetAt         DateTime?
   brandVoice           String?
+  onboardingCompleted  Boolean   @default(false)
+  onboardingStep       Int       @default(0)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   projects             Project[]
   accounts             Account[]
   sessions             Session[]
+  feedbacks            Feedback[]
+  youtubeConnection    YouTubeConnection?
 }
 
 model Account {
@@ -92,6 +96,36 @@ model Output {
   metadata      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  feedback      Feedback[]
 
   @@index([projectId])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  outputId  String
+  output    Output   @relation(fields: [outputId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    String
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([outputId, userId])
+  @@index([outputId])
+  @@index([userId])
+}
+
+model YouTubeConnection {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channelId     String
+  channelTitle  String
+  accessToken   String
+  refreshToken  String
+  tokenExpiry   DateTime
+  scope         String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

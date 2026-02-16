@@ -9,6 +9,7 @@ const PLATFORMS = [
   { id: "LINKEDIN", label: "LinkedIn Post" },
   { id: "INSTAGRAM", label: "Instagram Carousel" },
   { id: "BLOG", label: "Blog Post" },
+  { id: "SHORT_VIDEO", label: "YouTube Short", description: "30-60s video script with optimized metadata" },
 ];
 
 type InputMode = "text" | "file";
@@ -21,7 +22,7 @@ export default function NewProjectPage() {
   const [inputText, setInputText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(
-    PLATFORMS.map((p) => p.id)
+    PLATFORMS.filter((p) => p.id !== "SHORT_VIDEO").map((p) => p.id)
   );
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
@@ -240,13 +241,16 @@ export default function NewProjectPage() {
             <button
               key={platform.id}
               onClick={() => togglePlatform(platform.id)}
-              className={`rounded-lg px-3 py-2 text-sm font-medium border transition-colors ${
+              className={`rounded-lg px-3 py-2 text-left border transition-colors ${
                 selectedPlatforms.includes(platform.id)
                   ? "bg-blue-50 text-blue-700 border-blue-300"
                   : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
               }`}
             >
-              {platform.label}
+              <span className="text-sm font-medium">{platform.label}</span>
+              {"description" in platform && platform.description && (
+                <span className="block text-xs text-gray-400 mt-0.5">{platform.description}</span>
+              )}
             </button>
           ))}
         </div>

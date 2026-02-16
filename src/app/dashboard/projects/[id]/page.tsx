@@ -29,6 +29,24 @@ export default async function ProjectPage({
     notFound();
   }
 
+  // Fetch user's feedback for this project's outputs
+  const outputIds = project.outputs.map((o) => o.id);
+  const feedbacks = outputIds.length > 0
+    ? await prisma.feedback.findMany({
+        where: {
+          outputId: { in: outputIds },
+          userId: user.id,
+        },
+      })
+    : [];
+
+  const feedbackMap: Record<string, { rating: string; comment: string | null }> = {};
+  for (const f of feedbacks) {
+    feedbackMap[f.outputId] = { rating: f.rating, comment: f.comment };
+  }
+
+  const isDemo = project.title.startsWith("Sample:");
+
   // Serialize dates for client component
   const serialized = {
     ...project,
@@ -42,5 +60,11 @@ export default async function ProjectPage({
     })),
   };
 
-  return <ProjectDetail project={serialized} />;
+  return (
+    <ProjectDetail
+      project={serialized}
+      feedbackMap={feedbackMap}
+      isDemo={isDemo}
+    />
+  );
 }

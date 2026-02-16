@@ -3,9 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProgressSteps } from "@/components/ui/progress-steps";
+import { OutputFeedback } from "@/components/feedback/output-feedback";
+import { ShortVideoDisplay } from "@/components/outputs/short-video-display";
 
 type Output = {
   id: string;
@@ -51,7 +54,17 @@ function stripMarkdown(text: string): string {
     .replace(/\n{3,}/g, "\n\n");          // collapse extra newlines
 }
 
-export function ProjectDetail({ project: initialProject }: { project: Project }) {
+type FeedbackMap = Record<string, { rating: string; comment: string | null }>;
+
+export function ProjectDetail({
+  project: initialProject,
+  feedbackMap = {},
+  isDemo = false,
+}: {
+  project: Project;
+  feedbackMap?: FeedbackMap;
+  isDemo?: boolean;
+}) {
   const router = useRouter();
   const { addToast } = useToast();
   const [project, setProject] = useState(initialProject);
@@ -297,6 +310,21 @@ export function ProjectDetail({ project: initialProject }: { project: Project })
         </button>
       </div>
 
+      {/* Demo project banner */}
+      {isDemo && (
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 flex items-center justify-between">
+          <p className="text-sm text-blue-700">
+            This is a sample project. Like what you see?
+          </p>
+          <Link
+            href="/dashboard/projects/new"
+            className="shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+          >
+            Create your first project &rarr;
+          </Link>
+        </div>
+      )}
+
       {/* Progress indicator for processing projects */}
       {isProcessing && <ProgressSteps status={project.status} />}
 
@@ -361,71 +389,105 @@ export function ProjectDetail({ project: initialProject }: { project: Project })
             </div>
           ) : (
             <>
-              {/* Toolbar */}
-              <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500">
-                    {wordCount} words &middot; {charCount} chars
-                  </span>
-                  {hasUnsavedChanges && editingContent[activeOutput.id] !== undefined && (
-                    <span className="text-xs text-amber-600 font-medium">Unsaved</span>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {/* Edit/Preview toggle */}
-                  <button
-                    onClick={() => setPreviewMode(!previewMode)}
-                    className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${
-                      previewMode
-                        ? "border-blue-300 bg-blue-50 text-blue-700"
-                        : "border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {previewMode ? "Edit" : "Preview"}
-                  </button>
-                  <button
-                    onClick={handleCopy}
-                    className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    {copied ? "Copied!" : "Copy"}
-                  </button>
-                  <button
-                    onClick={() => setConfirmRegenerate(true)}
-                    disabled={regenerating === activeTab}
-                    className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    {regenerating === activeTab
-                      ? "Regenerating..."
-                      : "Regenerate"}
-                  </button>
-                  {editingContent[activeOutput.id] !== undefined && (
+              {activeTab === "SHORT_VIDEO" ? (
+                <>
+                  {/* Regenerate toolbar for short video */}
+                  <div className="flex items-center justify-end border-b border-gray-200 px-4 py-2">
                     <button
-                      onClick={() => handleSave(activeOutput)}
-                      disabled={saving}
-                      className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                      onClick={() => setConfirmRegenerate(true)}
+                      disabled={regenerating === activeTab}
+                      className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                     >
-                      {saving ? "Saving..." : "Save"}
+                      {regenerating === activeTab
+                        ? "Regenerating..."
+                        : "Regenerate"}
                     </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Editable content or preview */}
-              {previewMode ? (
-                <div className="prose prose-sm max-w-none p-4 min-h-[200px] md:min-h-[400px]">
-                  <ReactMarkdown>{currentContent}</ReactMarkdown>
-                </div>
+                  </div>
+                  <ShortVideoDisplay content={currentContent} youtubeStatus={undefined} />
+                  <div className="px-4 pb-3">
+                    <OutputFeedback
+                      outputId={activeOutput.id}
+                      initialFeedback={feedbackMap[activeOutput.id] ?? undefined}
+                    />
+                  </div>
+                </>
               ) : (
-                <textarea
-                  value={getDisplayContent(activeOutput)}
-                  onChange={(e) =>
-                    setEditingContent((prev) => ({
-                      ...prev,
-                      [activeOutput.id]: e.target.value,
-                    }))
-                  }
-                  className="w-full min-h-[200px] md:min-h-[400px] p-4 text-sm text-gray-800 focus:outline-none resize-y whitespace-pre-wrap"
-                />
+                <>
+                  {/* Toolbar */}
+                  <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-500">
+                        {wordCount} words &middot; {charCount} chars
+                      </span>
+                      {hasUnsavedChanges && editingContent[activeOutput.id] !== undefined && (
+                        <span className="text-xs text-amber-600 font-medium">Unsaved</span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {/* Edit/Preview toggle */}
+                      <button
+                        onClick={() => setPreviewMode(!previewMode)}
+                        className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${
+                          previewMode
+                            ? "border-blue-300 bg-blue-50 text-blue-700"
+                            : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {previewMode ? "Edit" : "Preview"}
+                      </button>
+                      <button
+                        onClick={handleCopy}
+                        className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        {copied ? "Copied!" : "Copy"}
+                      </button>
+                      <button
+                        onClick={() => setConfirmRegenerate(true)}
+                        disabled={regenerating === activeTab}
+                        className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {regenerating === activeTab
+                          ? "Regenerating..."
+                          : "Regenerate"}
+                      </button>
+                      {editingContent[activeOutput.id] !== undefined && (
+                        <button
+                          onClick={() => handleSave(activeOutput)}
+                          disabled={saving}
+                          className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {saving ? "Saving..." : "Save"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Editable content or preview */}
+                  {previewMode ? (
+                    <div className="prose prose-sm max-w-none p-4 min-h-[200px] md:min-h-[400px]">
+                      <ReactMarkdown>{currentContent}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <textarea
+                      value={getDisplayContent(activeOutput)}
+                      onChange={(e) =>
+                        setEditingContent((prev) => ({
+                          ...prev,
+                          [activeOutput.id]: e.target.value,
+                        }))
+                      }
+                      className="w-full min-h-[200px] md:min-h-[400px] p-4 text-sm text-gray-800 focus:outline-none resize-y whitespace-pre-wrap"
+                    />
+                  )}
+
+                  {/* Feedback */}
+                  <div className="px-4 pb-3">
+                    <OutputFeedback
+                      outputId={activeOutput.id}
+                      initialFeedback={feedbackMap[activeOutput.id] ?? undefined}
+                    />
+                  </div>
+                </>
               )}
             </>
           )}

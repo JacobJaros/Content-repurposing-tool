@@ -347,6 +347,40 @@ Content is king, but distribution is queen. You can create the best content in t
 
 Repurposing isn't lazy — it's strategic. It's how the most successful creators scale their reach without burning out. Start with the Content Cascade Method, and you'll be amazed at how much more value you can extract from the content you're already creating.`;
 
+    case "SHORT_VIDEO":
+      return JSON.stringify({
+        hook: "You're wasting 80% of every piece of content you create.",
+        script: [
+          {
+            text: "You're wasting 80% of every piece of content you create.",
+            duration: 3,
+            visualNote: "Direct to camera, intense eye contact, dramatic pause"
+          },
+          {
+            text: "Most creators spend 6 to 8 hours on a single piece of content, publish it once, and never touch it again. That's like writing a bestseller and only selling it in one bookstore.",
+            duration: 9,
+            visualNote: "Quick cuts between creator working and empty storefront"
+          },
+          {
+            text: "Here's the fix — the Content Cascade Method. Step one: create one master piece. Step two: extract the gold — key quotes, frameworks, stats. Step three: adapt each nugget for different platforms. One podcast becomes ten pieces of content.",
+            duration: 13,
+            visualNote: "Animated text overlay showing the 3 steps, fast-paced transitions"
+          },
+          {
+            text: "One creator did this and got 4x more reach in 90 days without creating anything new. The secret? Each platform speaks a different language. Twitter wants hot takes. LinkedIn wants stories. Instagram wants visuals. Same idea, different packaging.",
+            duration: 12,
+            visualNote: "Split screen showing same content adapted for different platforms"
+          }
+        ],
+        cta: "Follow for more content strategy tips and drop a comment with your favorite platform to repurpose for!",
+        totalDuration: 42,
+        title: "You're Wasting 80% of Your Content (Here's the Fix)",
+        description: "#shorts Most creators publish once and move on. The Content Cascade Method turns one piece of content into 10+ platform-optimized outputs. Here's exactly how to do it.",
+        tags: ["content repurposing", "content strategy", "content creation", "social media tips", "creator tips", "content marketing"],
+        hashtags: ["#shorts", "#ContentStrategy", "#CreatorTips", "#ContentRepurposing"],
+        visualDirection: "Fast-paced, high-energy editing. Use jump cuts between segments. Text overlays for key stats (80%, 4x, 10+ pieces). Brand colors as accent. Vertical 9:16 format."
+      });
+
     default:
       return `Generated content for ${platform}.\n\nThis is placeholder content for the ${platform} platform based on the analyzed source material about content repurposing strategies.`;
   }

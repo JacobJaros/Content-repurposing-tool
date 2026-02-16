@@ -9,6 +9,9 @@ type SettingsFormProps = {
   email: string;
   plan: string;
   usageCount: number;
+  youtubeConnected?: boolean;
+  youtubeChannelTitle?: string | null;
+  youtubeConfigured?: boolean;
 };
 
 export function SettingsForm({
@@ -17,11 +20,15 @@ export function SettingsForm({
   email,
   plan,
   usageCount,
+  youtubeConnected = false,
+  youtubeChannelTitle = null,
+  youtubeConfigured = false,
 }: SettingsFormProps) {
   const { addToast } = useToast();
   const [name, setName] = useState(initialName);
   const [brandVoice, setBrandVoice] = useState(initialBrandVoice);
   const [saving, setSaving] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
 
   const hasChanges =
     name !== initialName || brandVoice !== initialBrandVoice;
@@ -43,6 +50,23 @@ export function SettingsForm({
       addToast("Failed to save settings", "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDisconnectYouTube = async () => {
+    setDisconnecting(true);
+    try {
+      const res = await fetch("/api/youtube/disconnect", { method: "POST" });
+      if (res.ok) {
+        addToast("YouTube disconnected", "success");
+        window.location.reload();
+      } else {
+        addToast("Failed to disconnect YouTube", "error");
+      }
+    } catch {
+      addToast("Failed to disconnect YouTube", "error");
+    } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -90,6 +114,58 @@ export function SettingsForm({
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>
+          )}
+        </div>
+      </div>
+
+      {/* Connected Accounts */}
+      <div className="rounded-lg border border-gray-200 bg-white p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Connected Accounts
+        </h2>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* YouTube icon */}
+            <svg className="h-8 w-8 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-gray-900">YouTube</p>
+              {youtubeConnected && youtubeChannelTitle ? (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-gray-500">{youtubeChannelTitle}</span>
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                    Connected
+                  </span>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Connect to upload Shorts directly
+                </p>
+              )}
+            </div>
+          </div>
+
+          {!youtubeConfigured ? (
+            <span className="text-xs text-gray-400">
+              YouTube API credentials not configured
+            </span>
+          ) : youtubeConnected ? (
+            <button
+              onClick={handleDisconnectYouTube}
+              disabled={disconnecting}
+              className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+            >
+              {disconnecting ? "Disconnecting..." : "Disconnect"}
+            </button>
+          ) : (
+            <a
+              href="/api/youtube/connect"
+              className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+            >
+              Connect YouTube
+            </a>
           )}
         </div>
       </div>

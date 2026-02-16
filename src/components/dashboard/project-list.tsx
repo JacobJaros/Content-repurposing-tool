@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Project = {
   id: string;
@@ -10,6 +11,11 @@ type Project = {
   status: string;
   createdAt: string;
   outputCount: number;
+};
+
+type ProjectListProps = {
+  projects: Project[];
+  onboardingCompleted?: boolean;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -23,9 +29,26 @@ const STATUS_COLORS: Record<string, string> = {
 
 const STATUS_FILTERS = ["ALL", "READY", "GENERATING", "FAILED"] as const;
 
-export function ProjectList({ projects }: { projects: Project[] }) {
+export function ProjectList({ projects, onboardingCompleted }: ProjectListProps) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [creatingDemo, setCreatingDemo] = useState(false);
+
+  const handleTrySample = async () => {
+    setCreatingDemo(true);
+    try {
+      const res = await fetch("/api/demo", { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        router.push(`/dashboard/projects/${data.projectId}`);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setCreatingDemo(false);
+    }
+  };
 
   const filtered = projects.filter((p) => {
     const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase());
@@ -94,12 +117,21 @@ export function ProjectList({ projects }: { projects: Project[] }) {
           <p className="text-gray-500 mb-6 max-w-sm mx-auto">
             Create your first project to see AI transform your content into platform-ready posts.
           </p>
-          <Link
-            href="/dashboard/projects/new"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            Create your first project
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={handleTrySample}
+              disabled={creatingDemo}
+              className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+            >
+              {creatingDemo ? "Creating..." : "Try with sample content"}
+            </button>
+            <Link
+              href="/dashboard/projects/new"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              Create your first project
+            </Link>
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12">
@@ -124,7 +156,14 @@ export function ProjectList({ projects }: { projects: Project[] }) {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium text-gray-900">{project.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-gray-900">{project.title}</h3>
+                    {project.title.startsWith("Sample:") && (
+                      <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                        Sample
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500 mt-1">
                     {project.inputType} &middot;{" "}
                     {project.outputCount} outputs &middot;{" "}

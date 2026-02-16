@@ -22,6 +22,8 @@ export type Platform =
   | "THREADS"
   | "QUOTE_CARD";
 
+export type Rating = "THUMBS_UP" | "THUMBS_DOWN";
+
 export type ApiErrorResponse = {
   error: string;
   code: string;

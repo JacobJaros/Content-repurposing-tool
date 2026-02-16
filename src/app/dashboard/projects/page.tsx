@@ -28,5 +28,10 @@ export default async function ProjectsPage() {
     outputCount: p.outputs.length,
   }));
 
-  return <ProjectList projects={serialized} />;
+  return (
+    <ProjectList
+      projects={serialized}
+      onboardingCompleted={user.onboardingCompleted}
+    />
+  );
 }
